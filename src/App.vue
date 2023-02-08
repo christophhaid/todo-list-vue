@@ -9,26 +9,59 @@ const defaultData = [
     content: "Einkaufen gehen",
   },
 ];
+
+//Here we store all Todos
+const todos = ref(JSON.parse(localStorage.getItem("todos")) || defaultData);
+
+var addTodo = () => {
+  if (newTodo.value) {
+    todos.value.push({
+      done: false,
+      content: newTodo.value,
+    });
+    newTodo.value = "";
+  }
+  saveData();
+};
+
+var doneTodo = (todo) => {
+  console.log(todo);
+  todo.done = !todo.done;
+  saveData();
+};
+function removeTodo(index) {
+  todos.value.splice(index, 1);
+  saveData();
+}
+
+var saveData = () => {
+  const storageData = JSON.stringify(todos.value);
+  localStorage.setItem("todos", storageData);
+};
 </script>
 
 <template>
   <h1>ToDo App</h1>
-  <form>
+  <form @submit.prevent="addTodo()">
     <label>Neue Aufgabe hinzufügen: </label>
     <input
+      v-model="newTodo"
       placehodler="Enter your Todo here"
       name="newTodo"
       autocomplete="off"
     />
+    <button :disabled="!newTodo">Aufgabe Hinzufügen</button>
   </form>
   <h2>Deine Aufgaben:</h2>
   <ul>
-    <li>
-      <span>Todo</span>
-      <button>Entfernen</button>
+    <li v-for="(todo, index) in todos" :key="index">
+      <span :class="{ done: todo.done }" @click="doneTodo(todo)">{{
+        todo.content
+      }}</span>
+      <button @click="removeTodo(index)">Entfernen</button>
     </li>
   </ul>
-  <h4>Deine Aufgabenliste ist leer 🤟</h4>
+  <h4 v-if="todos.length === 0">Deine Aufgabenliste ist leer 🤟</h4>
 </template>
 
 <style lang="scss">
